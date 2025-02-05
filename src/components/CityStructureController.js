@@ -70,7 +70,7 @@ class CityStructureController extends OCTAVIA.Core.ScriptComponent
                             const _Geo = new THREE.BoxGeometry(_Structure.width, _height, _Structure.length)
                             _Geo.translate(0, _height / 2, 0)
 
-                            this._Mesh = new OCTAVIA.Core.Mesh(_Geo)
+                            this._Mesh = new OCTAVIA.Core.Mesh(_Geo, OCTAVIA.FindMaterial("Magenta"))
                             this._Mesh.position.copy(this.TilePosition)
 
                             OCTAVIA.AddToThreeGroup("City Structures", this._Mesh)
