@@ -3,6 +3,7 @@ import { COMPONENTS } from "./core/components"
 import { ASSEMBLIES } from "./core/assemblies"
 import { GAME_EVENTS } from "./core/game"
 import { GAME_MATERIALS } from "./core/materials"
+import { MODELS } from "./core/models"
 
 const Octavia = ({children}) =>
 {
@@ -12,6 +13,7 @@ const Octavia = ({children}) =>
             components : COMPONENTS,
             events     : GAME_EVENTS,
             materials  : GAME_MATERIALS,
+            models     : MODELS,
         }}
         onReady={() =>
         {

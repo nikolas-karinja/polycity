@@ -4,6 +4,7 @@ export const ASSEMBLIES = {
         components: {
             "City Controller" : {},
             "City Terrain Controller" : {},
+            "City Tile Controller" : {},
             "City Structure Controller" : {},
         },
     }
