@@ -7,6 +7,7 @@ const CityState = () =>
 {
     const [visible, setVisibility] = useState(false)
     const [viewingStructuresMenu, setViewingStructuresMenu] = useState(false)
+    const [viewingPathsMenu, setViewingPathsMenu] = useState(false)
 
     const toggleStructuresMenu = () =>
     {
@@ -24,6 +25,22 @@ const CityState = () =>
         }
     }
 
+    const togglePathsMenu = () =>
+        {
+            if (viewingPathsMenu)
+            {
+                setViewingPathsMenu(false)
+                setVisibility(true)
+                OCTAVIA.DispatchEvent("hide city paths menu")
+            }
+            else
+            {
+                setViewingPathsMenu(true)
+                setVisibility(false)
+                OCTAVIA.DispatchEvent("show city paths menu")
+            }
+        }
+
     useEffect(() =>
     {
         OCTAVIA.AddEventListener("create city", () =>
@@ -34,12 +51,14 @@ const CityState = () =>
         OCTAVIA.AddEventListener("show city state", () =>
         {
             setViewingStructuresMenu(false)
+            setViewingPathsMenu(false)
             setVisibility(true)
         })
     }, [])
 
     return <UIState visible={visible}>
         <button onMouseDown={toggleStructuresMenu}>Structures</button>
+        <button onMouseDown={togglePathsMenu}>Paths</button>
     </UIState>
 }
 

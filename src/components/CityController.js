@@ -19,6 +19,7 @@ class CityController extends OCTAVIA.Core.ScriptComponent
     {
         OCTAVIA.CreateThreeGroup('City Terrain', 'City')
         OCTAVIA.CreateThreeGroup('City Structures', 'City')
+        OCTAVIA.CreateThreeGroup('City Pathing', 'City')
     }
 
     SetupEvents ()

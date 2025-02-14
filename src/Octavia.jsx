@@ -23,6 +23,7 @@ const Octavia = ({children}) =>
 
             // temp
             OCTAVIA.AssembleGameObject("City Generator")
+            OCTAVIA.AssembleGameObject("City Camera")
 
             setTimeout(() =>
             {

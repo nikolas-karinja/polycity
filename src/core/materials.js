@@ -2,10 +2,22 @@ export const GAME_MATERIALS = {
     // "Tile Cursor": {
 
     // }
-    "Magenta": {
-        type: "MeshPhong",
+    "Object Cursor (Good)": {
+        type: "MeshBasic",
         options: {
-            color: 0xff00ff,
+            color: 0x00ff00,
+            transparent: true,
+            opacity: 0.5,
+            depthTest: false,
+        }
+    },
+    "Object Cursor (Bad)": {
+        type: "MeshBasic",
+        options: {
+            color: 0xff0000,
+            transparent: true,
+            opacity: 0.5,
+            depthTest: false,
         }
     }
 }

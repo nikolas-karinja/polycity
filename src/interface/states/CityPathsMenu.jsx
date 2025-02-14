@@ -4,7 +4,7 @@ import { OCTAVIA } from "@little-island/octavia-engine"
 import { GAME_SETTINGS } from "../../core/game"
 import * as UTILS from '../../core/utils'
 
-const CityStructuresMenu = () =>
+const CityPathsMenu = () =>
 {
     const [visible, setVisibility] = useState(false)
 
@@ -13,45 +13,43 @@ const CityStructuresMenu = () =>
         GAME_SETTINGS.City.placingStructure = false
         GAME_SETTINGS.City.structure = null
 
-        OCTAVIA.DispatchEvent("hide city structures menu")
+        OCTAVIA.DispatchEvent("hide city paths menu")
         OCTAVIA.DispatchEvent("show city state")
     }
 
-    const determineStructures = () =>
+    const determinePaths = () =>
     {
-        const _s = []
+        const _p = []
 
-        for (const s in UTILS.getCityTileSetData().Structures)
-            _s.push(<button 
+        for (const p in UTILS.getCityTileSetData().Paths)
+            _p.push(<button 
                 onMouseDown={() => {
-                    GAME_SETTINGS.City.placingStructure = true
-                    GAME_SETTINGS.City.structure = s
-
-                    OCTAVIA.DispatchEvent("update tile cursor")
+                    GAME_SETTINGS.City.placingPath = true
+                    GAME_SETTINGS.City.path = p
                 }}>
-                {s}
+                {p}
                 </button>)
 
-        return _s
+        return _p
     }
 
     useEffect(() =>
     {
-        OCTAVIA.AddEventListener("show city structures menu", () =>
+        OCTAVIA.AddEventListener("show city paths menu", () =>
         {
             setVisibility(true)
         })
 
-        OCTAVIA.AddEventListener("hide city structures menu", () =>
+        OCTAVIA.AddEventListener("hide city paths menu", () =>
         {
             setVisibility(false)
         })
     }, [])
 
     return <UIState visible={visible}>
-        {determineStructures()}
+        {determinePaths()}
         <button onMouseDown={closeMenu}>CLOSE</button>
     </UIState>
 }
 
-export default CityStructuresMenu
+export default CityPathsMenu

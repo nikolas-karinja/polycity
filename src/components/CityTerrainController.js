@@ -29,8 +29,9 @@ class CityTerrainController extends OCTAVIA.Core.ScriptComponent
 
             OCTAVIA.AddToThreeGroup('City Terrain', this.Mesh)
 
-            // set terrain mesh in structure controller component
+            // set terrain mesh in structure & pathing controller component
             this.GetComponent("City Structure Controller").TerrainMesh = this.Mesh
+            this.GetComponent("City Pathing Controller").TerrainMesh = this.Mesh
 
             OCTAVIA.DispatchEvent("create city tiles")
         })
