@@ -6,6 +6,11 @@ export const getCityTileSetData = () =>
 }
 
 export const getStructureData = (name) =>
-    {
-        return GAME_TILESETS[GAME_SETTINGS.City.tileSet].Structures[name]
-    }
+{
+    return GAME_TILESETS[GAME_SETTINGS.City.tileSet].Structures[name]
+}
+
+export const getPathData = (name) =>
+{
+    return GAME_TILESETS[GAME_SETTINGS.City.tileSet].Paths[name]
+}

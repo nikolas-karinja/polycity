@@ -15,7 +15,7 @@ export const ASSEMBLIES = {
             "City Terrain Controller" : {},
             "City Tile Controller" : {},
             "City Pathing Controller" : {},
-            "City Structure Controller" : {},
+            "City Tile Object Controller" : {},
         },
     }
 }

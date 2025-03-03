@@ -25,6 +25,7 @@ class CityViewControls extends OCTAVIA.Core.ScriptComponent
         this.Controls.enableDamping = true
         this.Controls.mouseButtons.LEFT = null
         this.Controls.mouseButtons.RIGHT = THREE.MOUSE.PAN
+        this.Controls.autoRotate = false
     }
 
     Update ()

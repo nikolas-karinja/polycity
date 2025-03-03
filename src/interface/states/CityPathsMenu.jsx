@@ -10,8 +10,8 @@ const CityPathsMenu = () =>
 
     const closeMenu = () =>
     {
-        GAME_SETTINGS.City.placingStructure = false
-        GAME_SETTINGS.City.structure = null
+        GAME_SETTINGS.City.placingPath = false
+        GAME_SETTINGS.City.path = null
 
         OCTAVIA.DispatchEvent("hide city paths menu")
         OCTAVIA.DispatchEvent("show city state")
