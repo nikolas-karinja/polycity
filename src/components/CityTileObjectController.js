@@ -45,6 +45,18 @@ class StructurePlacementData
     {
         const _directions = this.GetNearestPathDirections()
 
+        if (_directions.length === 0)
+        {
+            this.width = this.Data.width
+            this.length = this.Data.length
+
+            this.sx = this.tx - this.Data.entrance
+            this.sy = this.ty
+            this.direction = GAME_OBJECT_DIRECTIONS.NORTH
+
+            return false
+        }
+
         if (_directions.includes(GAME_OBJECT_DIRECTIONS.NORTH))
         {
             this.width = this.Data.width
@@ -203,24 +215,23 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
             _Structure.width, _Structure.length, structure)
     }
 
-    GenerateStructureMesh (tx, ty, structureName, tileCursorPosition, structureDirection)
+    GenerateStructureMesh (tx, ty, structureName, tileCursePosition, structurePlacementData)
     {
-        const _StructureData = UTILS.getStructureData(structureName)
         const _GeoChunk = this.GetComponent("City Tile Controller").FindTileStructureGeometryChunk(tx, ty)
         const _TruePosition = new THREE.Vector3()
 
-        _TruePosition.x = ((GAME_SETTINGS.City.geometryChunkSize / -2) + (tx - _GeoChunk.tileStartX)) + 0.5
-        _TruePosition.z = ((GAME_SETTINGS.City.geometryChunkSize / -2) + (ty - _GeoChunk.tileStartY)) + 0.5
+        _TruePosition.x = (GAME_SETTINGS.City.geometryChunkSize / -2) + (tileCursePosition.x - ((GAME_SETTINGS.City.mapSize / -2) + (_GeoChunk.chunkX * GAME_SETTINGS.City.geometryChunkSize)))
+        _TruePosition.z = (GAME_SETTINGS.City.geometryChunkSize / -2) + (tileCursePosition.z - ((GAME_SETTINGS.City.mapSize / -2) + (_GeoChunk.chunkY * GAME_SETTINGS.City.geometryChunkSize)))
 
-        if (!OCTAVIA.MathUtils.isOdd(_StructureData.width))
-            _TruePosition.x += 0.5
-        if (!OCTAVIA.MathUtils.isOdd(_StructureData.length))
-            _TruePosition.z += 0.5
+        if (!OCTAVIA.MathUtils.isOdd(structurePlacementData.width))
+            _TruePosition.x -= 0.5
+        if (!OCTAVIA.MathUtils.isOdd(structurePlacementData.length))
+            _TruePosition.z -= 0.5
 
-        _GeoChunk.AddGeometry(tx, ty, structureName, _TruePosition, structureDirection)
+        _GeoChunk.AddGeometry(tx, ty, structureName, _TruePosition, structurePlacementData.direction)
     }
 
-    GeneratePathMesh (pathName)
+    GeneratePathMesh ()
     {
         const _geoChunks = []
 
@@ -341,24 +352,6 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
         }
     }
 
-    GetNearestPathDirection (tx, ty)
-    {
-        // north
-        if (CANVASES.Find("Tile Type").CheckPixelColorHex(tx, ty - 1, COLORINDEX_TILE_TYPE.PATH))
-            return GAME_OBJECT_DIRECTIONS.NORTH
-        // west
-        else if (CANVASES.Find("Tile Type").CheckPixelColorHex(tx + 1, ty, COLORINDEX_TILE_TYPE.PATH))
-            return GAME_OBJECT_DIRECTIONS.WEST
-        // south
-        else if (CANVASES.Find("Tile Type").CheckPixelColorHex(tx, ty + 1, COLORINDEX_TILE_TYPE.PATH))
-            return GAME_OBJECT_DIRECTIONS.SOUTH
-        // east
-        else if (CANVASES.Find("Tile Type").CheckPixelColorHex(tx - 1, ty, COLORINDEX_TILE_TYPE.PATH))
-            return GAME_OBJECT_DIRECTIONS.EAST
-
-        return null
-    }
-
     Update ()
     {
         if (GAME_SETTINGS.City.active && 
@@ -374,6 +367,7 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
                     {
                     OCTAVIA.SetRaycastGroup("City Terrain")
     
+                    this.TileCursorMesh.material = this.TCMaterialGood
                     this.TileCursorMesh.visible = true
                     this.TileCursorMesh.rotation.y = 0
     
@@ -395,23 +389,18 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
                         this.CurrentTile.set(Math.floor(_ID.point.x) + (GAME_SETTINGS.City.mapSize / 2), 
                             Math.floor(_ID.point.z) + (GAME_SETTINGS.City.mapSize / 2))
 
-                        const _direction = this.GetNearestPathDirection(this.CurrentTile.x, this.CurrentTile.y)
-
                         _SPD = new StructurePlacementData(this.CurrentTile.x, this.CurrentTile.y, GAME_SETTINGS.City.structure, this.GetComponent("City Tile Controller"))
                         _tilesClear = _SPD.Calculate()
 
                         if (_tilesClear)
                         {
-                            console.log(_SPD.direction)
-
                             this.TileCursorMesh.rotation.y = GAME_OBJECT_DIRECTIONS_MULT[_SPD.direction] * (Math.PI / -2)                            
                         }
+                        else
+                            this.TileCursorMesh.rotation.y = 0
 
-                        if (_SPD && _tilesClear)
-                        {
-                            this.SetTileCursorPosition(((GAME_SETTINGS.City.mapSize / -2) + _SPD.sx) + (_SPD.width / 2), 
-                                ((GAME_SETTINGS.City.mapSize / -2) + _SPD.sy) + (_SPD.length / 2))
-                        }
+                        this.SetTileCursorPosition(((GAME_SETTINGS.City.mapSize / -2) + _SPD.sx) + (_SPD.width / 2), 
+                            ((GAME_SETTINGS.City.mapSize / -2) + _SPD.sy) + (_SPD.length / 2))
 
                         if (_tilesClear && _SPD)
                             this.TileCursorMesh.material = this.TCMaterialGood
@@ -419,8 +408,6 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
                             this.TileCursorMesh.material = this.TCMaterialBad
 
                         if (INPUT.IsPointerButtonUp(0) &&
-                            this.TilePosition.x !== 0 && 
-                            this.TilePosition.z !== 0 && 
                             _tilesClear &&
                             _SPD &&
                             INPUT.PointerData.target.id !== "")
@@ -432,8 +419,8 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
 
                                 this.GenerateStructureMesh(this.CurrentTile.x, this.CurrentTile.y, 
                                     GAME_SETTINGS.City.structure,
-                                    this.TileCursorMesh.position,
-                                    _SPD.direction)
+                                    this.TilePosition,
+                                    _SPD)
                             }
                         }
                     }

@@ -6,13 +6,13 @@ import * as UTILS from '../core/utils'
 
 class CityTileStructure 
 {
-    constructor (name, sx, sy, position)
+    constructor (name, sx, sy, w, l, position)
     {
         this.name = name
         this.sx = sx
         this.sy = sy
-        this.ex = sx + UTILS.getStructureData(name).width
-        this.ey = sy + UTILS.getStructureData(name).length
+        this.ex = sx + (w - 1)
+        this.ey = sy + (l - 1)
         this.Position = position
     }
 }
@@ -34,11 +34,11 @@ class CityTile
         this.path = name
     }
 
-    SetStructure (name, sx, sy, position)
+    SetStructure (name, sx, sy, w, l, position)
     {
         if (name)
         {
-            this.Structure = new CityTileStructure(name, sx, sy, position)
+            this.Structure = new CityTileStructure(name, sx, sy, w, l, position)
 
             return
         }
@@ -114,9 +114,9 @@ class StructureGeometryChunk
         {
             const _StructureData = UTILS.getStructureData(g.structureName)
             const _StructureGeo = OCTAVIA.FindModel(UTILS.getCityTileSetData().model).FindMesh(_StructureData.model).geometry.clone()
+            _StructureGeo.rotateY(GAME_OBJECT_DIRECTIONS_MULT[g.direction] * (Math.PI / -2))
             _StructureGeo.scale(_scale, _scale, _scale)
             _StructureGeo.translate(g.Position.x, 0, g.Position.z)
-            _StructureGeo.rotateY(GAME_OBJECT_DIRECTIONS_MULT[g.direction] * (Math.PI / -2))
 
             _geometriesToMerge.push(_StructureGeo)
         }
@@ -358,7 +358,7 @@ class CityTileController extends OCTAVIA.Core.ScriptComponent
                 for (let y = sy; y < l; y++)
                     for (let x = sx; x < w; x++)
                     {
-                        this.tiles[y][x].SetStructure(structure, sx, sy, tilePosition)
+                        this.tiles[y][x].SetStructure(structure, sx, sy, w, l, tilePosition)
                     }
             }
         }
