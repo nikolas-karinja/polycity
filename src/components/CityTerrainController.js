@@ -24,7 +24,7 @@ class CityTerrainController extends OCTAVIA.Core.ScriptComponent
             const _Geo = new THREE.PlaneGeometry(GAME_SETTINGS.City.mapSize, GAME_SETTINGS.City.mapSize)
 
             // create mesh
-            this.Mesh = new OCTAVIA.Core.Mesh(_Geo)
+            this.Mesh = new OCTAVIA.Core.Mesh(_Geo, OCTAVIA.FindMaterial("Basic Terrain"))
             this.Mesh.rotateX(Math.PI / -2)
 
             OCTAVIA.AddToThreeGroup('City Terrain', this.Mesh)

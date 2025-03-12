@@ -1,8 +1,102 @@
-import { GAME_SCENES, INPUT, OCTAVIA } from "@little-island/octavia-engine";
-import { GAME_SETTINGS, GAME_STRUCTURE_RULES } from "../core/game";
+import { CANVASES, GAME_SCENES, INPUT, OCTAVIA } from "@little-island/octavia-engine";
+import { COLORINDEX_TILE_TYPE, GAME_OBJECT_DIRECTIONS, GAME_OBJECT_DIRECTIONS_MULT, GAME_SETTINGS, GAME_STRUCTURE_RULES } from "../core/game";
 import * as THREE from 'three'
 import * as UTILS from '../core/utils'
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils";
+
+class StructurePlacementData
+{
+    constructor (tx, ty, name, cityTileController)
+    {
+        this.tx = tx
+        this.ty = ty
+        this.sx = 0
+        this.sy = 0
+        this.width = 0
+        this.length = 0
+        this.name = name
+        this.direction = GAME_OBJECT_DIRECTIONS.NORTH
+        this.Data = UTILS.getStructureData(name)
+        this.CityTileController = cityTileController
+        this.tilesClear = false
+    }
+
+    GetNearestPathDirections ()
+    {
+        const _directions = []
+
+        // north
+        if (CANVASES.Find("Tile Type").CheckPixelColorHex(this.tx, this.ty - 1, COLORINDEX_TILE_TYPE.PATH))
+            _directions.push(GAME_OBJECT_DIRECTIONS.NORTH)
+        // west
+        if (CANVASES.Find("Tile Type").CheckPixelColorHex(this.tx + 1, this.ty, COLORINDEX_TILE_TYPE.PATH))
+            _directions.push(GAME_OBJECT_DIRECTIONS.WEST)
+        // south
+        if (CANVASES.Find("Tile Type").CheckPixelColorHex(this.tx, this.ty + 1, COLORINDEX_TILE_TYPE.PATH))
+            _directions.push(GAME_OBJECT_DIRECTIONS.SOUTH)
+        // east
+        if (CANVASES.Find("Tile Type").CheckPixelColorHex(this.tx - 1, this.ty, COLORINDEX_TILE_TYPE.PATH))
+            _directions.push(GAME_OBJECT_DIRECTIONS.EAST)
+
+        return _directions
+    }
+
+    Calculate ()
+    {
+        const _directions = this.GetNearestPathDirections()
+
+        if (_directions.includes(GAME_OBJECT_DIRECTIONS.NORTH))
+        {
+            this.width = this.Data.width
+            this.length = this.Data.length
+
+            this.sx = this.tx - this.Data.entrance
+            this.sy = this.ty
+            this.direction = GAME_OBJECT_DIRECTIONS.NORTH
+
+            if (!this.CityTileController.CheckTilesOccupiedRect(this.sx, this.sy, this.width, this.length))
+                return true
+        }
+        if (_directions.includes(GAME_OBJECT_DIRECTIONS.WEST))
+        {
+            this.width = this.Data.length
+            this.length = this.Data.width
+
+            this.sx = (this.tx - (this.width - 1))
+            this.sy = this.ty - this.Data.entrance
+            this.direction = GAME_OBJECT_DIRECTIONS.WEST
+
+            if (!this.CityTileController.CheckTilesOccupiedRect(this.sx, this.sy, this.width, this.length))
+                return true
+        }
+        if (_directions.includes(GAME_OBJECT_DIRECTIONS.SOUTH))
+        {
+            this.width = this.Data.width
+            this.length = this.Data.length
+
+            this.sx =   this.tx
+            this.sy = this.ty - (this.length - 1)
+            this.direction = GAME_OBJECT_DIRECTIONS.SOUTH
+
+            if (!this.CityTileController.CheckTilesOccupiedRect(this.sx, this.sy, this.width, this.length))
+                return true
+        }
+        if (_directions.includes(GAME_OBJECT_DIRECTIONS.EAST))
+        {
+            this.width = this.Data.length
+            this.length = this.Data.width
+
+            this.sx = this.tx
+            this.sy = (this.ty + (this.length - 1)) - this.Data.entrance
+            this.direction = GAME_OBJECT_DIRECTIONS.EAST
+
+            if (!this.CityTileController.CheckTilesOccupiedRect(this.sx, this.sy, this.width, this.length))
+                return true
+        }
+
+        return this.tilesClear
+    }
+}
 
 class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
 {
@@ -20,6 +114,7 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
         this.drawAlongX = false
         this.firstDraw = true
         this.tilesToDraw = []
+        this.pathRouteClear = true
 
         this.TCMaterialGood = OCTAVIA.FindMaterial("Object Cursor (Good)")
         this.TCMaterialBad = OCTAVIA.FindMaterial("Object Cursor (Bad)")
@@ -80,6 +175,17 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
                     this.TileCursorMesh.geometry = _tileCursorGeo
                     this.TileCursorMesh.scale.setScalar(UTILS.getCityTileSetData().scale)
                 }
+
+                if (GAME_SETTINGS.City.placingPath &&
+                    GAME_SETTINGS.City.path)
+                {
+                    const _tileCursorGeo = OCTAVIA.FindModel(UTILS.getCityTileSetData().model)
+                        .FindMesh(UTILS.getPathData(GAME_SETTINGS.City.path)
+                        .Models["single"]).geometry.clone()
+
+                    this.TileCursorMesh.geometry = _tileCursorGeo
+                    this.TileCursorMesh.scale.setScalar(UTILS.getCityTileSetData().scale)
+                }
             }
         })
     }
@@ -97,7 +203,7 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
             _Structure.width, _Structure.length, structure)
     }
 
-    GenerateStructureMesh (tx, ty, structureName, tilePosition)
+    GenerateStructureMesh (tx, ty, structureName, tileCursorPosition, structureDirection)
     {
         const _StructureData = UTILS.getStructureData(structureName)
         const _GeoChunk = this.GetComponent("City Tile Controller").FindTileStructureGeometryChunk(tx, ty)
@@ -111,7 +217,7 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
         if (!OCTAVIA.MathUtils.isOdd(_StructureData.length))
             _TruePosition.z += 0.5
 
-        _GeoChunk.AddGeometry(tx, ty, structureName, _TruePosition)
+        _GeoChunk.AddGeometry(tx, ty, structureName, _TruePosition, structureDirection)
     }
 
     GeneratePathMesh (pathName)
@@ -216,16 +322,41 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
                     _G.rotateX(Math.PI / -2)
                     _G.translate((GAME_SETTINGS.City.mapSize / -2) + (t[0] + 0.5), 0,
                         (GAME_SETTINGS.City.mapSize / -2) + (t[1] + 0.5))
-                    
 
                     _geometries.push(_G)
+
+                    if (this.GetComponent("City Tile Controller").CheckTileForTypes(t[0], t[1], [COLORINDEX_TILE_TYPE.STRUCTURE]))
+                        this.pathRouteClear = false
                 }
 
                 this.tilesToDraw = _tilesToDraw
 
                 this.PathLayoutMesh.geometry = mergeGeometries(_geometries)
+
+                if (this.pathRouteClear)
+                    this.PathLayoutMesh.material = this.TCMaterialGood
+                else
+                    this.PathLayoutMesh.material = this.TCMaterialBad
             }
         }
+    }
+
+    GetNearestPathDirection (tx, ty)
+    {
+        // north
+        if (CANVASES.Find("Tile Type").CheckPixelColorHex(tx, ty - 1, COLORINDEX_TILE_TYPE.PATH))
+            return GAME_OBJECT_DIRECTIONS.NORTH
+        // west
+        else if (CANVASES.Find("Tile Type").CheckPixelColorHex(tx + 1, ty, COLORINDEX_TILE_TYPE.PATH))
+            return GAME_OBJECT_DIRECTIONS.WEST
+        // south
+        else if (CANVASES.Find("Tile Type").CheckPixelColorHex(tx, ty + 1, COLORINDEX_TILE_TYPE.PATH))
+            return GAME_OBJECT_DIRECTIONS.SOUTH
+        // east
+        else if (CANVASES.Find("Tile Type").CheckPixelColorHex(tx - 1, ty, COLORINDEX_TILE_TYPE.PATH))
+            return GAME_OBJECT_DIRECTIONS.EAST
+
+        return null
     }
 
     Update ()
@@ -244,6 +375,7 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
                     OCTAVIA.SetRaycastGroup("City Terrain")
     
                     this.TileCursorMesh.visible = true
+                    this.TileCursorMesh.rotation.y = 0
     
                     this.cursorReady = true
                 }
@@ -252,29 +384,36 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
                 {
                     const _Structure = UTILS.getStructureData(GAME_SETTINGS.City.structure)
                     let _tilesClear = true
+                    let _structureDirection = GAME_OBJECT_DIRECTIONS.NORTH
+                    let _SPD = null // structure placement data
+
 
                     if (GAME_SCENES.IsFirstObjectIntersected(this.TerrainMesh))
                     {
                         const _ID = GAME_SCENES.IntersectData
 
-                        this.SetTileCursorPosition(Math.floor(_ID.point.x) + 0.5, 
-                            Math.floor(_ID.point.z) + 0.5)
-
                         this.CurrentTile.set(Math.floor(_ID.point.x) + (GAME_SETTINGS.City.mapSize / 2), 
                             Math.floor(_ID.point.z) + (GAME_SETTINGS.City.mapSize / 2))
 
-                        const _sx = OCTAVIA.MathUtils.isOdd(_Structure.width) ? this.CurrentTile.x - (Math.floor(_Structure.width / 2)) :
-                            this.CurrentTile.x - ((_Structure.width / 2) - 1)
-                        const _sy = OCTAVIA.MathUtils.isOdd(_Structure.length) ? this.CurrentTile.y - (Math.floor(_Structure.length / 2)) :
-                            this.CurrentTile.y - ((_Structure.length / 2) - 1)
+                        const _direction = this.GetNearestPathDirection(this.CurrentTile.x, this.CurrentTile.y)
 
-                        if (this.GetComponent("City Tile Controller").CheckTilesOccupiedRect(_sx, _sy, _Structure.width, _Structure.length) ||
-                            _sx < 0 || _sy < 0 ||
-                            _sx + _Structure.width >= GAME_SETTINGS.City.mapSize ||
-                            _sy + _Structure.length >= GAME_SETTINGS.City.mapSize)
-                            _tilesClear = false
+                        _SPD = new StructurePlacementData(this.CurrentTile.x, this.CurrentTile.y, GAME_SETTINGS.City.structure, this.GetComponent("City Tile Controller"))
+                        _tilesClear = _SPD.Calculate()
 
                         if (_tilesClear)
+                        {
+                            console.log(_SPD.direction)
+
+                            this.TileCursorMesh.rotation.y = GAME_OBJECT_DIRECTIONS_MULT[_SPD.direction] * (Math.PI / -2)                            
+                        }
+
+                        if (_SPD && _tilesClear)
+                        {
+                            this.SetTileCursorPosition(((GAME_SETTINGS.City.mapSize / -2) + _SPD.sx) + (_SPD.width / 2), 
+                                ((GAME_SETTINGS.City.mapSize / -2) + _SPD.sy) + (_SPD.length / 2))
+                        }
+
+                        if (_tilesClear && _SPD)
                             this.TileCursorMesh.material = this.TCMaterialGood
                         else
                             this.TileCursorMesh.material = this.TCMaterialBad
@@ -283,16 +422,18 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
                             this.TilePosition.x !== 0 && 
                             this.TilePosition.z !== 0 && 
                             _tilesClear &&
+                            _SPD &&
                             INPUT.PointerData.target.id !== "")
                         {
                             if (_Structure.rule === GAME_STRUCTURE_RULES.SINGLE)
                             {
-                                this.GetComponent("City Tile Controller").SetTilesOccupiedRect(_sx, _sy, 
-                                    _Structure.width, _Structure.length, GAME_SETTINGS.City.structure, this.TilePosition)
+                                this.GetComponent("City Tile Controller").SetTilesOccupiedRect(_SPD.sx, _SPD.sy, 
+                                    _SPD.width, _SPD.length, GAME_SETTINGS.City.structure, this.TilePosition)
 
                                 this.GenerateStructureMesh(this.CurrentTile.x, this.CurrentTile.y, 
                                     GAME_SETTINGS.City.structure,
-                                    this.TilePosition)
+                                    this.TileCursorMesh.position,
+                                    _SPD.direction)
                             }
                         }
                     }
@@ -312,6 +453,8 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
 
                         this.CurrentTile.set(Math.floor(_ID.point.x) + (GAME_SETTINGS.City.mapSize / 2), 
                             Math.floor(_ID.point.z) + (GAME_SETTINGS.City.mapSize / 2))
+
+                        if (this.TileCursorMesh.visible)
 
                         // if (this.GetComponent("City Tile Controller").CheckTilesOccupiedRect(this.CurrentTile.x, this.CurrentTile.y, 1, 1))
                         //     _tilesClear = false
@@ -341,7 +484,10 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
                                 this.firstDraw = true
                                 this.PathLayoutMesh.visible = false
 
-                                this.GeneratePathMesh(GAME_SETTINGS.City.path)
+                                if (this.pathRouteClear)
+                                    this.GeneratePathMesh(GAME_SETTINGS.City.path)
+
+                                this.pathRouteClear = true
                             }
                         }
 
@@ -373,6 +519,8 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
                                         else
                                             this.drawAlongX = false
                                     }
+
+                                    this.pathRouteClear = true
 
                                     this.DrawPathLayout()
                                 }

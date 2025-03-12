@@ -26,6 +26,7 @@ class CityViewControls extends OCTAVIA.Core.ScriptComponent
         this.Controls.mouseButtons.LEFT = null
         this.Controls.mouseButtons.RIGHT = THREE.MOUSE.PAN
         this.Controls.autoRotate = false
+        this.Controls.maxDistance = 12
     }
 
     Update ()

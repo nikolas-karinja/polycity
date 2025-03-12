@@ -13,6 +13,13 @@ export const GAME_SETTINGS = {
 }
 
 export const GAME_OBJECT_DIRECTIONS = {
+    NORTH : "NORTH",
+    WEST  : "WEST",
+    SOUTH : "SOUTH",
+    EAST  : "EAST",
+}
+
+export const GAME_OBJECT_DIRECTIONS_MULT = {
     NORTH : 0,
     WEST  : 1,
     SOUTH : 2,
@@ -63,11 +70,16 @@ export const COLORINDEX_PATH_MODEL_TYPES = {
 
 export const COLORINDEX_OBJECT_DIRECTIONS = {
     NORTH : "#000000",
-    WEST  : "#111111",
+    WEST  : "#ff0000",
     SOUTH : "#222222",
-    EAST  : "#333333",
+    EAST  : "#00ff00",
 }
 
+export const COLORINDEX_TILE_TYPE = {
+    NONE : "#000000",
+    PATH  : "#111111",
+    STRUCTURE : "#222222",
+}
 
 export const GAME_TILESETS ={
     "Default City": {
@@ -87,61 +99,19 @@ export const GAME_TILESETS ={
             }
         },
         Structures: {
-            "General Store": {
+            "Small Residence": {
                 width: 1,
                 length: 1,
                 rule: GAME_STRUCTURE_RULES.SINGLE,
-                tileSet: "Default City",
-                model: "building_A",
+                entrance: 0, // along x
+                model: "small_residence",
             },
-            "Townhouse": {
-                width: 1,
-                length: 1,
+            "Large Complex": {
+                width: 3,
+                length: 2,
                 rule: GAME_STRUCTURE_RULES.SINGLE,
-                tileSet: "Default City",
-                model: "building_B",
-            },
-            "Tiny Apartment Complex": {
-                width: 1,
-                length: 1,
-                rule: GAME_STRUCTURE_RULES.SINGLE,
-                tileSet: "Default City",
-                model: "building_C",
-            },
-            "Small Apartment Complex": {
-                width: 1,
-                length: 1,
-                rule: GAME_STRUCTURE_RULES.SINGLE,
-                tileSet: "Default City",
-                model: "building_D",
-            },
-            "Small Bussiness Storefront": {
-                width: 1,
-                length: 1,
-                rule: GAME_STRUCTURE_RULES.SINGLE,
-                tileSet: "Default City",
-                model: "building_E",
-            },
-            "Modest Apartment Complex": {
-                width: 1,
-                length: 1,
-                rule: GAME_STRUCTURE_RULES.SINGLE,
-                tileSet: "Default City",
-                model: "building_F",
-            },
-            "Small Commune": {
-                width: 1,
-                length: 1,
-                rule: GAME_STRUCTURE_RULES.SINGLE,
-                tileSet: "Default City",
-                model: "building_G",
-            },
-            "Urban Residence": {
-                width: 1,
-                length: 1,
-                rule: GAME_STRUCTURE_RULES.SINGLE,
-                tileSet: "Default City",
-                model: "building_H",
+                entrance: 2,
+                model: "large_complex",
             },
         }
     }

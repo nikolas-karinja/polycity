@@ -1,7 +1,7 @@
 import { EVENTS, OCTAVIA } from "@little-island/octavia-engine";
 import * as THREE from 'three'
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
-import { COLORINDEX_OBJECT_DIRECTIONS, COLORINDEX_PATH_MODEL_TYPES, GAME_GEOMETRY_CHUNK_TYPES, GAME_OBJECT_DIRECTIONS, GAME_PATH_MODEL_TYPES, GAME_SETTINGS, GAME_TILESETS } from "../core/game";
+import { COLORINDEX_OBJECT_DIRECTIONS, COLORINDEX_PATH_MODEL_TYPES, COLORINDEX_TILE_TYPE, GAME_GEOMETRY_CHUNK_TYPES, GAME_OBJECT_DIRECTIONS_MULT, GAME_PATH_MODEL_TYPES, GAME_SETTINGS, GAME_TILESETS } from "../core/game";
 import * as UTILS from '../core/utils'
 
 class CityTileStructure 
@@ -49,12 +49,13 @@ class CityTile
 
 class StructureGeometryChunk_Geometry
 {
-    constructor (tileX, tileY, structureName, position)
+    constructor (tileX, tileY, structureName, position, direction)
     {
         this.tileX = tileX
         this.tileY = tileY
         this.structureName = structureName
         this.Position = position
+        this.direction = direction
     }
 }
 
@@ -79,9 +80,9 @@ class StructureGeometryChunk
         OCTAVIA.AddToThreeGroup("City Structures", this.Mesh)
     }
 
-    AddGeometry (tx, ty, structureName, position)
+    AddGeometry (tx, ty, structureName, position, direction)
     {
-        this.geometries.push(new StructureGeometryChunk_Geometry(tx, ty, structureName, position))
+        this.geometries.push(new StructureGeometryChunk_Geometry(tx, ty, structureName, position, direction))
 
         this.Redraw()
     }
@@ -115,6 +116,7 @@ class StructureGeometryChunk
             const _StructureGeo = OCTAVIA.FindModel(UTILS.getCityTileSetData().model).FindMesh(_StructureData.model).geometry.clone()
             _StructureGeo.scale(_scale, _scale, _scale)
             _StructureGeo.translate(g.Position.x, 0, g.Position.z)
+            _StructureGeo.rotateY(GAME_OBJECT_DIRECTIONS_MULT[g.direction] * (Math.PI / -2))
 
             _geometriesToMerge.push(_StructureGeo)
         }
@@ -159,7 +161,7 @@ class PathGeometryChunk
                 if (this.PathingController.CheckTileOccupied(x, y))
                 {
                     let _modelType = GAME_PATH_MODEL_TYPES.STRAIGHT
-                    let _direction = GAME_OBJECT_DIRECTIONS.NORTH
+                    let _direction = GAME_OBJECT_DIRECTIONS_MULT.NORTH
 
                     const _styleColor = this.PathingController.GetTileStyleColor(x, y)
                     const _directionColor = this.PathingController.GetTileDirectionColor(x, y)
@@ -191,16 +193,16 @@ class PathGeometryChunk
                     switch (_directionColor)
                     {
                         case COLORINDEX_OBJECT_DIRECTIONS.NORTH:
-                            _direction = GAME_OBJECT_DIRECTIONS.NORTH
+                            _direction = GAME_OBJECT_DIRECTIONS_MULT.NORTH
                             break
                         case COLORINDEX_OBJECT_DIRECTIONS.WEST:
-                            _direction = GAME_OBJECT_DIRECTIONS.WEST
+                            _direction = GAME_OBJECT_DIRECTIONS_MULT.WEST
                             break
                         case COLORINDEX_OBJECT_DIRECTIONS.SOUTH:
-                            _direction = GAME_OBJECT_DIRECTIONS.SOUTH
+                            _direction = GAME_OBJECT_DIRECTIONS_MULT.SOUTH
                             break
                         case COLORINDEX_OBJECT_DIRECTIONS.EAST:
-                            _direction = GAME_OBJECT_DIRECTIONS.EAST
+                            _direction = GAME_OBJECT_DIRECTIONS_MULT.EAST
                             break
                         default:
                             break
@@ -211,7 +213,7 @@ class PathGeometryChunk
 
                     const _PathGeo = OCTAVIA.FindModel(UTILS.getCityTileSetData().model)
                         .FindMesh(UTILS.getPathData("City Road").Models[_modelType]).geometry.clone()
-                    _PathGeo.rotateY(_direction * (Math.PI / 2))
+                    _PathGeo.rotateY(_direction * (Math.PI / -2))
                     _PathGeo.scale(_scale, _scale, _scale)
                     _PathGeo.translate(_trueX, 0, _trueZ)
 
@@ -250,6 +252,7 @@ class CityTileController extends OCTAVIA.Core.ScriptComponent
         this.structureGeometryChunks = []
         this.tilesReady = false
         this.TilesOccupiedCanvas = null
+        this.TileTypeCanvas = null
     }
 
     Start ()
@@ -282,6 +285,24 @@ class CityTileController extends OCTAVIA.Core.ScriptComponent
         return this.structureGeometryChunks[_tile.geometryChunkY][_tile.geometryChunkX]
     }
 
+    CheckTileForTypes (tx, ty, list = [])
+    {
+        let _result = false
+
+        if (this.tilesReady)
+        {
+            for (let c of list)
+                if (this.TileTypeCanvas.CheckPixelColorHex(tx, ty, c))
+                {
+                    _result = true
+
+                    break
+                }
+        }
+
+        return _result
+    }
+
     CheckTilesOccupiedRect (sx, sy, w, l)
     {
         let _result = false
@@ -308,10 +329,14 @@ class CityTileController extends OCTAVIA.Core.ScriptComponent
     {
         if (this.tilesReady)
         {
-            this.TilesOccupiedCanvas.FillRectHex(tx, ty, 1, 1, "#0f0")
+            this.TilesOccupiedCanvas.SetPixelColorHex(tx, ty, "#0f0")
 
             if (path)
+            {
                 this.tiles[ty][tx].SetPath(path)
+
+                this.TileTypeCanvas.SetPixelColorHex(tx, ty, COLORINDEX_TILE_TYPE.PATH)
+            }
         }
     }
 
@@ -320,14 +345,15 @@ class CityTileController extends OCTAVIA.Core.ScriptComponent
         if (this.tilesReady)
         {
             this.TilesOccupiedCanvas.FillRectHex(sx, sy, w, l, "#0f0")
+            this.TileTypeCanvas.FillRectHex(sx, sy, w, l, COLORINDEX_TILE_TYPE.STRUCTURE)
 
             if (structure)
             {
 
-            if (!OCTAVIA.MathUtils.isOdd(w))
-                tilePosition.x += 0.5
-            if (!OCTAVIA.MathUtils.isOdd(l))
-                tilePosition.z += 0.5
+                if (!OCTAVIA.MathUtils.isOdd(w))
+                    tilePosition.x += 0.5
+                if (!OCTAVIA.MathUtils.isOdd(l))
+                    tilePosition.z += 0.5
 
                 for (let y = sy; y < l; y++)
                     for (let x = sx; x < w; x++)
@@ -340,10 +366,14 @@ class CityTileController extends OCTAVIA.Core.ScriptComponent
 
     InitTiles ()
     {
-        // create canvas
+        // create canvases
         this.TilesOccupiedCanvas = OCTAVIA.Managers.Canvases.Create("Tiles Occupied",
             GAME_SETTINGS.City.mapSize, GAME_SETTINGS.City.mapSize)
         this.TilesOccupiedCanvas.Clear("#f00")
+
+        this.TileTypeCanvas = OCTAVIA.Managers.Canvases.Create("Tile Type",
+            GAME_SETTINGS.City.mapSize, GAME_SETTINGS.City.mapSize)
+        this.TileTypeCanvas.Clear(COLORINDEX_TILE_TYPE.NONE)
 
         // create tile data
         for (let y = 0; y < GAME_SETTINGS.City.mapSize; y++)

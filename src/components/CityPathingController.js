@@ -1,6 +1,6 @@
-import { EVENTS, OCTAVIA } from "@little-island/octavia-engine";
+import { CANVASES, EVENTS, OCTAVIA } from "@little-island/octavia-engine";
 import * as THREE from 'three'
-import { COLORINDEX_OBJECT_DIRECTIONS, COLORINDEX_PATH_MODEL_TYPES, GAME_OBJECT_DIRECTIONS, GAME_PATH_MODEL_TYPES, GAME_SETTINGS } from "../core/game";
+import { COLORINDEX_OBJECT_DIRECTIONS, COLORINDEX_PATH_MODEL_TYPES, COLORINDEX_TILE_TYPE, GAME_OBJECT_DIRECTIONS, GAME_PATH_MODEL_TYPES, GAME_SETTINGS } from "../core/game";
 
 class CityPathingController extends OCTAVIA.Core.ScriptComponent
 {
@@ -72,9 +72,17 @@ class CityPathingController extends OCTAVIA.Core.ScriptComponent
     SetTileOccupied (tx, ty, value = true)
     {
         if (value)
+        {
             this.PathPlacementCanvas.SetPixelColorHex(tx, ty, "#0f0")
+
+            CANVASES.Find("Tiles Occupied").SetPixelColorHex(tx, ty, "#0f0")
+            CANVASES.Find("Tile Type").SetPixelColorHex(tx, ty, COLORINDEX_TILE_TYPE.PATH)
+        }
         else
-            this.PathPlacementCanvas.SetPixelColorHex(tx, ty, "#f00")
+        {
+            CANVASES.Find("Tiles Occupied").SetPixelColorHex(tx, ty, "#f00")
+            CANVASES.Find("Tile Type").SetPixelColorHex(tx, ty, COLORINDEX_TILE_TYPE.NONE)
+        }
     }
 
     ClearTile (tx, ty)
@@ -133,11 +141,11 @@ class CityPathingController extends OCTAVIA.Core.ScriptComponent
             _pathModelType = "TSPLIT"
 
             if (_N && _W && _S && !_E)
-                _pathDirection = "SOUTH"
+                _pathDirection = "NORTH"
             if (_W && _S && _E && !_N)
                 _pathDirection = "WEST"
             if (_S && _E && _N && !_W)
-                _pathDirection = "NORTH"
+                _pathDirection = "SOUTH"
             if (_E && _N && _W && !_S)
                 _pathDirection = "EAST"
         }
@@ -159,12 +167,12 @@ class CityPathingController extends OCTAVIA.Core.ScriptComponent
 
                 if (_N && _W && !_S && !_E)
                     _pathDirection = "NORTH"
-                if (!_N && _W && _S && !_E)
-                    _pathDirection = "EAST"
-                if (!_N && !_W && _S && _E)
-                    _pathDirection = "SOUTH"
-                if (_N && !_W && !_S && _E)
+                else if (!_N && _W && _S && !_E)
                     _pathDirection = "WEST"
+                else if (!_N && !_W && _S && _E)
+                    _pathDirection = "SOUTH"
+                else if (_N && !_W && !_S && _E)
+                    _pathDirection = "EAST"
             }
         }
         if (_occupiedCount === 1)

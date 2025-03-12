@@ -26,6 +26,8 @@ const CityPathsMenu = () =>
                 onMouseDown={() => {
                     GAME_SETTINGS.City.placingPath = true
                     GAME_SETTINGS.City.path = p
+
+                    OCTAVIA.DispatchEvent("update tile cursor")
                 }}>
                 {p}
                 </button>)
