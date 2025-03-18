@@ -133,18 +133,16 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
 
         this.TileCursorMesh = new OCTAVIA.Core.Mesh(new THREE.BoxGeometry(0.25, 0.25, 0.25),
             this.TCMaterialGood)
-        this.TileCursorMesh.raycastEnabled = false
-
+        this.TileArrowMesh = OCTAVIA.FindModel("Tile Arrow").FindMesh("Arrow")
         this.PathLayoutMesh = new OCTAVIA.Core.Mesh(new THREE.BoxGeometry(0, 0, 0),
             this.TCMaterialGood)
-        this.PathLayoutMesh.raycastEnabled = false
-
     }
 
     Start ()
     {
         this.SetupEvents()
         this.SetupTileCursor()
+        this.SetupTileArrow()
         this.SetupPathLayout()
     }
 
@@ -157,13 +155,29 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
     SetupTileCursor ()
     {
         this.TileCursorMesh.visible = false
+        this.TileCursorMesh.renderOrder = 2  
+        this.TileCursorMesh.raycastEnabled = false
 
         this.AddGLObjectToScene(this.TileCursorMesh)
+    }
+
+    SetupTileArrow ()
+    {
+        this.TileArrowMesh.visible = false
+        this.TileArrowMesh.scale.setScalar(0.5)
+        this.TileArrowMesh.renderOrder = 999
+        this.TileArrowMesh.raycastEnabled = false
+        this.TileArrowMesh.material.transparent = true
+        this.TileArrowMesh.material.depthWrite = false
+        this.TileArrowMesh.material.depthTest = false
+
+        this.AddGLObjectToScene(this.TileArrowMesh)
     }
 
     SetupPathLayout ()
     {
         this.PathLayoutMesh.visible = false
+        this.PathLayoutMesh.raycastEnabled = false
 
         this.AddGLObjectToScene(this.PathLayoutMesh)
     }
@@ -252,11 +266,6 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
 
         for (let g of _geoChunks)
             g.Redraw()
-    }
-
-    GeneratePathTileAB ()
-    {
-
     }
 
     GetTilesPathLayoutX (tilesToDraw)
@@ -370,6 +379,9 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
                     this.TileCursorMesh.material = this.TCMaterialGood
                     this.TileCursorMesh.visible = true
                     this.TileCursorMesh.rotation.y = 0
+
+                    this.TileArrowMesh.visible = true
+                    this.TileArrowMesh.rotation.y = 0
     
                     this.cursorReady = true
                 }
@@ -378,7 +390,6 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
                 {
                     const _Structure = UTILS.getStructureData(GAME_SETTINGS.City.structure)
                     let _tilesClear = true
-                    let _structureDirection = GAME_OBJECT_DIRECTIONS.NORTH
                     let _SPD = null // structure placement data
 
 
@@ -389,15 +400,27 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
                         this.CurrentTile.set(Math.floor(_ID.point.x) + (GAME_SETTINGS.City.mapSize / 2), 
                             Math.floor(_ID.point.z) + (GAME_SETTINGS.City.mapSize / 2))
 
+                        this.TileArrowMesh.position.set(Math.floor(_ID.point.x) + 0.5, 0,
+                            Math.floor(_ID.point.z) + 0.5)
+
                         _SPD = new StructurePlacementData(this.CurrentTile.x, this.CurrentTile.y, GAME_SETTINGS.City.structure, this.GetComponent("City Tile Controller"))
                         _tilesClear = _SPD.Calculate()
 
                         if (_tilesClear)
                         {
-                            this.TileCursorMesh.rotation.y = GAME_OBJECT_DIRECTIONS_MULT[_SPD.direction] * (Math.PI / -2)                            
+                            const _rotation = GAME_OBJECT_DIRECTIONS_MULT[_SPD.direction] * (Math.PI / -2)
+
+                            this.TileCursorMesh.rotation.y = _rotation
+                        
+                            this.TileArrowMesh.rotation.y = _rotation
                         }
                         else
+                        {
                             this.TileCursorMesh.rotation.y = 0
+
+                            this.TileArrowMesh.rotation.y = 0
+                        }
+                            
 
                         this.SetTileCursorPosition(((GAME_SETTINGS.City.mapSize / -2) + _SPD.sx) + (_SPD.width / 2), 
                             ((GAME_SETTINGS.City.mapSize / -2) + _SPD.sy) + (_SPD.length / 2))
@@ -431,6 +454,9 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
                     const _Path = UTILS.getPathData(GAME_SETTINGS.City.path)
                     let _tilesClear = true
 
+                    if (this.TileArrowMesh.visible)
+                        this.TileArrowMesh.visible = false
+
                     if (GAME_SCENES.IsFirstObjectIntersected(this.TerrainMesh))
                     {
                         const _ID = GAME_SCENES.IntersectData
@@ -440,8 +466,6 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
 
                         this.CurrentTile.set(Math.floor(_ID.point.x) + (GAME_SETTINGS.City.mapSize / 2), 
                             Math.floor(_ID.point.z) + (GAME_SETTINGS.City.mapSize / 2))
-
-                        if (this.TileCursorMesh.visible)
 
                         // if (this.GetComponent("City Tile Controller").CheckTilesOccupiedRect(this.CurrentTile.x, this.CurrentTile.y, 1, 1))
                         //     _tilesClear = false
@@ -523,6 +547,7 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
                     OCTAVIA.SetRaycastGroup()
 
                     this.TileCursorMesh.visible = false
+                    this.TileArrowMesh.visible = false
 
                     this.cursorReady = false
                 }

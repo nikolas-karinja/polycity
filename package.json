@@ -2,6 +2,7 @@
   "name": "polycity",
   "version": "0.1.0",
   "private": true,
+  "homepage": "./",
   "dependencies": {
     "@little-island/octavia-engine": "^0.0.95",
     "cra-template": "1.2.0",
