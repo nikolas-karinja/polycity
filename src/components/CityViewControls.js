@@ -8,7 +8,7 @@ class CityViewControls extends OCTAVIA.Core.ScriptComponent
     {
         super(...args)
 
-        this.panSpeed = 1
+        this.panSpeed = 0.01
         this.Controls = null
     }
 
@@ -33,31 +33,30 @@ class CityViewControls extends OCTAVIA.Core.ScriptComponent
     {
         if (this.Controls)
         {
+            const _truePanSpeed = this.Controls.getDistance() * this.panSpeed
+
             this.Controls.update()
 
-            if ( INPUT.IsKeyDown( KEYS.W ) ) {
+            if (INPUT.IsKeyDown(KEYS.W))
+                this.Controls.panUp(_truePanSpeed)
 
-                this.Controls.panUp(this.panSpeed)
-    
-            }
+            if (INPUT.IsKeyDown(KEYS.S))
+                this.Controls.panDown(_truePanSpeed)
 
-            if ( INPUT.IsKeyDown( KEYS.S ) ) {
+            if (INPUT.IsKeyDown(KEYS.A))
+                this.Controls.panLeft(_truePanSpeed)
 
-                this.Controls.panDown(this.panSpeed)
-    
-            }
+            if (INPUT.IsKeyDown(KEYS.D))
+                this.Controls.panRight(_truePanSpeed)
 
-            if ( INPUT.IsKeyDown( KEYS.A ) ) {
+            if (INPUT.IsKeyDown(KEYS.Q))
+                this.Controls.rotateLeft(_truePanSpeed * 0.1)
 
-                this.Controls.panLeft(this.panSpeed)
-    
-            }
+            if (INPUT.IsKeyDown(KEYS.E))
+                this.Controls.rotateRight(_truePanSpeed * 0.1)
 
-            if ( INPUT.IsKeyDown( KEYS.D ) ) {
-
-                this.Controls.panRight(this.panSpeed)
-    
-            }
+            if (INPUT.IsKeyUp(KEYS.O))
+                this.Controls.autoRotate = !this.Controls.autoRotate
         }
     }
 }

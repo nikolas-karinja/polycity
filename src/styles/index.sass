@@ -1,10 +1,15 @@
+@font-face
+    font-family: "Nimbus Sans"
+    src: url("../../public/fonts/NimbusSanL-Reg.otf") format("opentype")
+
+    
 .UIState-module
     position: absolute
     left: 0
     top: 0
 
     color: #fff
-    font-family: 'Arial'
+    font-family: "Nimbus Sans"
     height: 100%
     pointer-events: none !important
     user-select: none 
@@ -28,3 +33,98 @@
             background: #00c2c9
             border: none
             box-shadow: #00f0f8 -4px 0px
+
+.ToolBar-module
+    position: absolute
+    bottom: 16px
+    left: 24px
+
+    height: 64px
+    display: flex
+    gap: 8px
+
+.ToolBarButton-module
+    position: relative
+
+    width: 48px
+    height: 48px
+    background: rgba(#000, 0.5)
+    cursor: pointer
+    border-radius: 4px
+
+    &:hover
+        background: #00c2c9
+
+        & .ToolBarButton-module--name
+            display: block
+
+    &.selected
+        background: #00999e
+
+        border-radius: 0 0 4px 4px
+
+    &--name
+        position: absolute
+        bottom: -24px
+        left: 50%
+
+        display: none
+        text-align: center
+        font-size: 16px
+        translate: -50% 0%
+
+    &--items
+        position: absolute
+        left: 0
+        bottom: 48px
+
+        display: flex
+        flex-direction: column
+        width: calc(100% - 16px)
+        background: rgba(#000, 0.5)
+        border-radius: 4px 4px 0 0
+        padding: 8px 8px 0px 8px
+
+    & img
+        width: 100%
+        height: 100%
+        pointer-events: none !important
+
+.ToolBarItemButton-module
+    position: relative
+
+    width: 32px
+    height: 32px
+    background: rgba(#000, 0.5)
+    cursor: pointer
+    border-radius: 4px
+    margin-bottom: 8px
+
+    &:hover
+        background: #00c2c9
+
+        & .ToolBarItemButton-module--name
+            display: block
+
+    &.selected
+        background: #00999e
+
+    &--name
+        position: absolute
+        top: 4px
+        left: 40px
+
+        display: none
+        text-align: center
+        background: rgba(#000, 0.5)
+        height: 24px
+        padding: 0 8px 0 0 
+        font-size: 16px
+        line-height: 24px
+        white-space: nowrap
+        border-radius: 0 4px 4px 0
+
+    & img
+        width: 100%
+        height: 100%
+        pointer-events: none !important

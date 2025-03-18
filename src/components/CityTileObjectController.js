@@ -433,7 +433,7 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
                         if (INPUT.IsPointerButtonUp(0) &&
                             _tilesClear &&
                             _SPD &&
-                            INPUT.PointerData.target.id !== "")
+                            INPUT.PointerData.target.id === "game")
                         {
                             if (_Structure.rule === GAME_STRUCTURE_RULES.SINGLE)
                             {
@@ -476,9 +476,7 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
                         //     this.TileCursorMesh.material = this.TCMaterialBad
 
                         if (INPUT.IsPointerButtonUp(0) &&
-                            this.TilePosition.x !== 0 && 
-                            this.TilePosition.z !== 0 &&
-                            INPUT.PointerData.target.id !== "")
+                            INPUT.PointerData.target.id === "game")
                         {
                             // this.GetComponent("City Pathing Controller").SetTileOccupied(this.CurrentTile.x, 
                             //     this.CurrentTile.y, 
@@ -502,7 +500,8 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
                             }
                         }
 
-                        if (INPUT.IsPointerButtonDown(0))
+                        if (INPUT.IsPointerButtonDown(0) &&
+                            INPUT.PointerData.target.id === "game")
                         {
                             if (!this.mouseDown)
                             {

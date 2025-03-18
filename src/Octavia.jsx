@@ -8,6 +8,7 @@ import { MODELS } from "./core/models"
 const Octavia = ({children}) =>
 {
     return <OCTAVIA.Interface
+        title="PolyCity"
         data={{
             assemblies : ASSEMBLIES,
             components : COMPONENTS,
