@@ -86,7 +86,7 @@ class StructurePlacementData
             this.width = this.Data.width
             this.length = this.Data.length
 
-            this.sx =   this.tx
+            this.sx = (this.tx - (this.width - 1)) + this.Data.entrance
             this.sy = this.ty - (this.length - 1)
             this.direction = GAME_OBJECT_DIRECTIONS.SOUTH
 
@@ -99,7 +99,7 @@ class StructurePlacementData
             this.length = this.Data.width
 
             this.sx = this.tx
-            this.sy = (this.ty + (this.length - 1)) - this.Data.entrance
+            this.sy = (this.ty - (this.length - 1)) + this.Data.entrance
             this.direction = GAME_OBJECT_DIRECTIONS.EAST
 
             if (!this.CityTileController.CheckTilesOccupiedRect(this.sx, this.sy, this.width, this.length))
