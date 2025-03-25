@@ -8,6 +8,7 @@ export const GAME_SETTINGS = {
         placingPath : false,
         structure : null,
         path : null,
+        bulldozing : false,
         tileSet : "Default City",
     }
 }
@@ -31,7 +32,9 @@ export const GAME_EVENTS = [
     "create city terrain",
     "create city tiles",
     "create city pathing",
+    "create city structures",
     "update tile cursor",
+    "update power grids",
     /** city ui */
     "show city state",
     "hide city paths menu",
@@ -93,6 +96,7 @@ export const COLORINDEX_TILE_TYPE = {
 }
 
 export const COLORINDEX_STRUCTURE_TYPE = {
+    NONE          : "#000000",
     RESIDENTIAL   : "#00ff00",
     COMMERCIAL    : "#0000ff",
     INDUSTRIAL    : "#ffff00",
@@ -128,7 +132,8 @@ export const GAME_TILESETS ={
                 entrance: 1, // along x
                 model: "coal_power_plant",
                 type: GAME_STRUCTURE_TYPES.POWER,
-                requiresPower: false,
+                powerCapacity: 50,
+                pollutionRadius: 12,
             },
             "Small Residence": {
                 width: 1,

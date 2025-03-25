@@ -25,7 +25,7 @@ class CityPathingController extends OCTAVIA.Core.ScriptComponent
         {
             this.InitCanvases()
 
-            GAME_SETTINGS.City.ready = true
+            OCTAVIA.DispatchEvent("create city structures")
         })
     }
 
@@ -80,6 +80,8 @@ class CityPathingController extends OCTAVIA.Core.ScriptComponent
         }
         else
         {
+            this.PathPlacementCanvas.SetPixelColorHex(tx, ty, "#f00")
+
             CANVASES.Find("Tiles Occupied").SetPixelColorHex(tx, ty, "#f00")
             CANVASES.Find("Tile Type").SetPixelColorHex(tx, ty, COLORINDEX_TILE_TYPE.NONE)
         }

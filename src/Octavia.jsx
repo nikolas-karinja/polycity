@@ -2,7 +2,7 @@ import { OCTAVIA } from "@little-island/octavia-engine"
 import { COMPONENTS } from "./core/components"
 import { ASSEMBLIES } from "./core/assemblies"
 import { GAME_EVENTS } from "./core/game"
-import { GAME_MATERIALS } from "./core/materials"
+import { GAME_MATERIALS, GAME_TEXTURES } from "./core/materials"
 import { MODELS } from "./core/models"
 
 const Octavia = ({children}) =>
@@ -15,6 +15,7 @@ const Octavia = ({children}) =>
             events     : GAME_EVENTS,
             materials  : GAME_MATERIALS,
             models     : MODELS,
+            textures   : GAME_TEXTURES,
         }}
         onReady={() =>
         {

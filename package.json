@@ -4,7 +4,7 @@
   "private": true,
   "homepage": "./",
   "dependencies": {
-    "@little-island/octavia-engine": "^0.0.95",
+    "@little-island/octavia-engine": "^0.0.97",
     "cra-template": "1.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

@@ -1,7 +1,7 @@
-import { EVENTS, OCTAVIA } from "@little-island/octavia-engine";
+import { EVENTS, MATERIALS, OCTAVIA } from "@little-island/octavia-engine";
 import * as THREE from 'three'
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
-import { COLORINDEX_OBJECT_DIRECTIONS, COLORINDEX_PATH_MODEL_TYPES, COLORINDEX_TILE_TYPE, GAME_GEOMETRY_CHUNK_TYPES, GAME_OBJECT_DIRECTIONS_MULT, GAME_PATH_MODEL_TYPES, GAME_SETTINGS, GAME_TILESETS } from "../core/game";
+import { COLORINDEX_OBJECT_DIRECTIONS, COLORINDEX_PATH_MODEL_TYPES, COLORINDEX_TILE_TYPE, GAME_GEOMETRY_CHUNK_TYPES, GAME_OBJECT_DIRECTIONS_MULT, GAME_PATH_MODEL_TYPES, GAME_SETTINGS, GAME_STRUCTURE_TYPES, GAME_TILESETS } from "../core/game";
 import * as UTILS from '../core/utils'
 
 class CityTileStructure 
@@ -49,11 +49,10 @@ class CityTile
 
 class StructureGeometryChunk_Geometry
 {
-    constructor (tileX, tileY, structureName, position, direction)
+    constructor (idColor, tileSetName, position, direction)
     {
-        this.tileX = tileX
-        this.tileY = tileY
-        this.structureName = structureName
+        this.idColor = idColor
+        this.tileSetName = tileSetName
         this.Position = position
         this.direction = direction
     }
@@ -61,14 +60,15 @@ class StructureGeometryChunk_Geometry
 
 class StructureGeometryChunk
 {
-    constructor (chunkX, chunkY, tileStartX, tileStartY, tileController)
+    constructor (chunkX, chunkY, tileStartX, tileStartY, tileController, structureController)
     {
         this.chunkX = chunkX
         this.chunkY = chunkY
         this.tileStartX = tileStartX
         this.tileStartY = tileStartY
         this.TileController = tileController
-        this.geometries = []
+        this.StructureContoller = structureController
+        this.Geometries = {}
         this.Position = new THREE.Vector3((GAME_SETTINGS.City.mapSize / -2) + (this.tileStartX + GAME_SETTINGS.City.geometryChunkSize / 2), 0,
             (GAME_SETTINGS.City.mapSize / -2) + (this.tileStartY + GAME_SETTINGS.City.geometryChunkSize / 2))
 
@@ -77,22 +77,41 @@ class StructureGeometryChunk
         this.Mesh = new OCTAVIA.Core.Mesh(new THREE.BoxGeometry(0, 0, 0), this.Material)
         this.Mesh.position.copy(this.Position)
 
+        this.NoPowerIconsMesh = new THREE.Points(new THREE.BufferGeometry(), 
+            OCTAVIA.FindMaterial("No Power (Icon)"))
+        this.NoPowerIconsMesh.position.copy(this.Position)
+
         OCTAVIA.AddToThreeGroup("City Structures", this.Mesh)
+        OCTAVIA.AddToThreeGroup("City Structures", this.NoPowerIconsMesh)
+
+        this.Init()
     }
 
-    AddGeometry (tx, ty, structureName, position, direction)
+    Init ()
     {
-        this.geometries.push(new StructureGeometryChunk_Geometry(tx, ty, structureName, position, direction))
+        this.SetupEvents()
+    }
+
+    SetupEvents ()
+    {
+        OCTAVIA.AddEventListener("update power grids", () => this.UpdateIcons())
+    }
+
+    AddGeometry (idColor, tileSetName, position, direction)
+    {
+        this.Geometries[idColor] = new StructureGeometryChunk_Geometry(idColor, tileSetName, position, direction)
 
         this.Redraw()
     }
 
-    RemoveGeometry (tx, ty)
+    RemoveGeometry (idColor, redraw = true)
     {
+        console.log(this.Geometries)
+
         let _result = null
 
-        for (let g of this.geometries)
-            if (g.tileX === tx && g.tileY === ty)
+        for (const g in this.Geometries)
+            if (g === idColor)
             {
                 _result = g
 
@@ -100,9 +119,10 @@ class StructureGeometryChunk
             }
 
         if (_result)
-            OCTAVIA.ArrayUtils.removeItemByValue(this.geometries, _result)
+            delete this.Geometries[_result]
 
-        this.Redraw()
+        if (redraw)
+            this.Redraw()
     }
 
     Redraw ()
@@ -110,20 +130,51 @@ class StructureGeometryChunk
         const _geometriesToMerge = []
         const _scale = UTILS.getCityTileSetData().scale
 
-        for (let g of this.geometries)
+        for (const g in this.Geometries)
         {
-            const _StructureData = UTILS.getStructureData(g.structureName)
+            const _G = this.Geometries[g]
+
+            const _StructureData = UTILS.getStructureData(_G.tileSetName)
             const _StructureGeo = OCTAVIA.FindModel(UTILS.getCityTileSetData().model).FindMesh(_StructureData.model).geometry.clone()
-            _StructureGeo.rotateY(GAME_OBJECT_DIRECTIONS_MULT[g.direction] * (Math.PI / -2))
+            _StructureGeo.rotateY(GAME_OBJECT_DIRECTIONS_MULT[_G.direction] * (Math.PI / -2))
             _StructureGeo.scale(_scale, _scale, _scale)
-            _StructureGeo.translate(g.Position.x, 0, g.Position.z)
+            _StructureGeo.translate(_G.Position.x, 0, _G.Position.z)
 
             _geometriesToMerge.push(_StructureGeo)
         }
 
-        this.Mesh.geometry = mergeGeometries(_geometriesToMerge)
+        // this.Mesh.geometry.dispose()
+        this.Mesh.geometry = _geometriesToMerge.length > 0 ? 
+            mergeGeometries(_geometriesToMerge) : new THREE.BoxGeometry(0, 0, 0)
+
+        this.UpdateIcons()
+    }
+
+    UpdateIcons ()
+    {
+        const _noPowerPos = []
+        const _Geo_noPower = new THREE.BufferGeometry()
+
+        for (const g in this.Geometries)
+        {
+            const _G = this.Geometries[g]
+            const _S = this.StructureContoller.FindStructure(_G.idColor)
+
+            if (_S.type !== GAME_STRUCTURE_TYPES.POWER)
+            {
+                if (!_S.hasPower)
+                    _noPowerPos.push(_G.Position.x, 1, _G.Position.z)
+            }
+        }
+
+        _Geo_noPower.setAttribute("position", 
+            new THREE.Float32BufferAttribute(_noPowerPos, 3))
+
+        // update geometries
+        this.NoPowerIconsMesh.geometry = _Geo_noPower
     }
 }
+
 class PathGeometryChunk
 {
     constructor (chunkX, chunkY, tileStartX, tileStartY, tileController, pathingController)
@@ -271,11 +322,21 @@ class CityTileController extends OCTAVIA.Core.ScriptComponent
         })
     }
 
+    FindPathGeometryChunk (cx, cy)
+    {
+        return this.pathGeometryChunks[cy][cx]
+    }
+
     FindTilePathGeometryChunk (tx, ty)
     {
         const _tile = this.tiles[ty][tx]
 
         return this.pathGeometryChunks[_tile.geometryChunkY][_tile.geometryChunkX]
+    }
+
+    FindStructureGeometryChunk (cx, cy)
+    {
+        return this.structureGeometryChunks[cy][cx]
     }
 
     FindTileStructureGeometryChunk (tx, ty)
@@ -340,27 +401,12 @@ class CityTileController extends OCTAVIA.Core.ScriptComponent
         }
     }
 
-    SetTilesOccupiedRect (sx, sy, w, l, structure = null, tilePosition)
+    SetTilesOccupiedRect (sx, sy, w, l, )
     {
         if (this.tilesReady)
         {
             this.TilesOccupiedCanvas.FillRectHex(sx, sy, w, l, "#0f0")
             this.TileTypeCanvas.FillRectHex(sx, sy, w, l, COLORINDEX_TILE_TYPE.STRUCTURE)
-
-            if (structure)
-            {
-
-                if (!OCTAVIA.MathUtils.isOdd(w))
-                    tilePosition.x += 0.5
-                if (!OCTAVIA.MathUtils.isOdd(l))
-                    tilePosition.z += 0.5
-
-                for (let y = sy; y < l; y++)
-                    for (let x = sx; x < w; x++)
-                    {
-                        this.tiles[y][x].SetStructure(structure, sx, sy, w, l, tilePosition)
-                    }
-            }
         }
     }
 
@@ -402,7 +448,7 @@ class CityTileController extends OCTAVIA.Core.ScriptComponent
 
             for (let x = 0; x < GAME_SETTINGS.City.mapSize; x += GAME_SETTINGS.City.geometryChunkSize)
             {
-                this.structureGeometryChunks[_my][_mx] = new StructureGeometryChunk(_mx, _my, x, y, this)
+                this.structureGeometryChunks[_my][_mx] = new StructureGeometryChunk(_mx, _my, x, y, this, this.GetComponent("City Structure Controller"))
                 this.pathGeometryChunks[_my][_mx] = new PathGeometryChunk(_mx, _my, x, y, this, this.GetComponent("City Pathing Controller"))
 
                 _mx++
