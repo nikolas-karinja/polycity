@@ -144,6 +144,7 @@ class StructureGeometryChunk
         }
 
         // this.Mesh.geometry.dispose()
+        this.Mesh.geometry.dispose()
         this.Mesh.geometry = _geometriesToMerge.length > 0 ? 
             mergeGeometries(_geometriesToMerge) : new THREE.BoxGeometry(0, 0, 0)
 
@@ -171,6 +172,7 @@ class StructureGeometryChunk
             new THREE.Float32BufferAttribute(_noPowerPos, 3))
 
         // update geometries
+        this.NoPowerIconsMesh.geometry.dispose()
         this.NoPowerIconsMesh.geometry = _Geo_noPower
     }
 }
@@ -272,6 +274,7 @@ class PathGeometryChunk
                 }
             }
             
+        this.Mesh.geometry.dispose()
         this.Mesh.geometry = _geometriesToMerge.length > 0 ? 
             mergeGeometries(_geometriesToMerge) : new THREE.BoxGeometry(0, 0, 0)
             

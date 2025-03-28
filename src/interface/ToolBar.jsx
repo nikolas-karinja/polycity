@@ -28,9 +28,9 @@ const ToolBarItemButton = ({name, itemSelected, setItemSelected, onSelect, onDes
         onMouseDown={_onMouseDown}>
         <img src={icon_item64}
             alt="Icon" />
-        <t className="ToolBarItemButton-module--name">
+        <text className="ToolBarItemButton-module--name">
             {name}
-        </t>
+        </text>
     </div>
 }
 

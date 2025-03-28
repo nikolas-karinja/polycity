@@ -3,6 +3,8 @@ import UIState from "../UIState"
 import { OCTAVIA } from "@little-island/octavia-engine"
 import { GAME_SETTINGS } from "../../core/game"
 import ToolBar from "../ToolBar"
+import TimeBar from "../TimeBar"
+import EconBar from "../EconBar"
 
 const CityState = () =>
 {
@@ -23,6 +25,8 @@ const CityState = () =>
 
     return <UIState visible={visible}>
         <ToolBar />
+        <EconBar />
+        <TimeBar />
     </UIState>
 }
 

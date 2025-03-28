@@ -22,6 +22,8 @@ class CityStructure
         this.WorldPosition = worldPosition
         this.direction = direction
         this.hasPower = false // for "non-power" buildings
+        this.hasWater = false // for "non-power" buildings
+        this.abandoned = false // for "non-power" buildings
         this.idColor = idColor
         this.TileSetData = UTILS.getStructureData(this.tileSetName)
         this.powerGridIdColor = null // for "non-power" buildings
@@ -60,8 +62,6 @@ class CityStructure
 
     Destroy ()
     {
-        console.log(OCTAVIA.FindGameObject("City Generator"))
-
         OCTAVIA.FindGameObject("City Generator")
             .GetComponent("City Tile Controller")
             .FindStructureGeometryChunk(this.gcx, this.gcy)

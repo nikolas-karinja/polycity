@@ -207,7 +207,7 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
     {
         this.AOEMesh.visible = false
         this.AOEMesh.raycastEnabled = false
-        this.AOEMesh.rotateX(Math.PI / -2)
+        this.AOEMesh.rotation.x = Math.PI / -2
 
         this.AddGLObjectToScene(this.AOEMesh)
     }
@@ -215,6 +215,7 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
     SetupRectAreaMesh ()
     {
         this.RectAreaMesh.visible = false
+        this.RectAreaMesh.rotation.x = Math.PI / -2
         this.RectAreaMesh.raycastEnabled = false
 
         this.AddGLObjectToScene(this.RectAreaMesh)
@@ -236,6 +237,7 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
                     const _tileCursorGeo = OCTAVIA.FindModel(UTILS.getCityTileSetData().model)
                         .FindMesh(_Structure.model).geometry.clone()
 
+                    this.TileCursorMesh.geometry.dispose()
                     this.TileCursorMesh.geometry = _tileCursorGeo
                     this.TileCursorMesh.scale.setScalar(UTILS.getCityTileSetData().scale)
                 }
@@ -247,14 +249,17 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
                         .FindMesh(UTILS.getPathData(GAME_SETTINGS.City.path)
                         .Models["single"]).geometry.clone()
 
+                    this.TileCursorMesh.geometry.dispose()
                     this.TileCursorMesh.geometry = _tileCursorGeo
                     this.TileCursorMesh.scale.setScalar(UTILS.getCityTileSetData().scale)
                 }
 
                 if (GAME_SETTINGS.City.bulldozing)
                 {
+                    this.TileCursorMesh.geometry.dispose()
                     this.TileCursorMesh.geometry = new THREE.PlaneGeometry()
                     this.TileCursorMesh.material = this.TCMaterialBad
+                    this.TileCursorMesh.rotation.y = 0
                     this.TileCursorMesh.rotation.x = Math.PI / -2
                     this.TileCursorMesh.scale.setScalar(1)
                 }
@@ -298,8 +303,8 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
     
         _geoChunksToUpdate.push([_gcsx, _gcsy])
 
-        for (let y = _gcsy; y < _gcey; y++)
-            for (let x = _gcsx; x < _gcex; x++)
+        for (let y = _gcsy; y <= _gcey; y++)
+            for (let x = _gcsx; x <= _gcex; x++)
                 if (!_geoChunksToUpdate.includes([x, y]))
                     _geoChunksToUpdate.push([x, y])
 
@@ -320,7 +325,7 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
 
         for (let s of _structureIdColors)
         {
-            const _S = this.GetComponent("City Structure Controller")
+            this.GetComponent("City Structure Controller")
                 .RemoveStructure(s)
         }
 
@@ -329,10 +334,10 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
             this.GetComponent("City Tile Controller")
                 .FindPathGeometryChunk(g[0], g[1])
                 .Redraw()
-            
+
             this.GetComponent("City Tile Controller")
                 .FindStructureGeometryChunk(g[0], g[1])
-                .Redraw(true)
+                .Redraw()
         }
 
         OCTAVIA.DispatchEvent("update power grids")
@@ -421,6 +426,7 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
 
                 this.tilesToDraw = _tilesToDraw
 
+                this.PathLayoutMesh.geometry.dispose()
                 this.PathLayoutMesh.geometry = mergeGeometries(_geometries)
 
                 if (this.pathRouteClear)
@@ -447,11 +453,11 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
             const _length = (_ey - _sy) + 1
 
             const _G = new THREE.PlaneGeometry(_width, _length)
-            _G.rotateX(Math.PI / -2)
-            _G.translate((GAME_SETTINGS.City.mapSize / -2) + (_sx + (_width / 2)), 0,
-                (GAME_SETTINGS.City.mapSize / -2) + (_sy + (_length / 2)))
 
+            this.RectAreaMesh.geometry.dispose()
             this.RectAreaMesh.geometry = _G
+            this.RectAreaMesh.position.set((GAME_SETTINGS.City.mapSize / -2) + (_sx + (_width / 2)), 0,
+                (GAME_SETTINGS.City.mapSize / -2) + (_sy + (_length / 2)))
         }
     }
 
@@ -523,6 +529,7 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
 
                         if (_Structure.pollutionRadius)
                         {
+                            this.AOEMesh.geometry.dispose()
                             this.AOEMesh.geometry = new THREE.PlaneGeometry((_Structure.pollutionRadius * 2) + _Structure.width,
                                 (_Structure.pollutionRadius * 2) + _Structure.length)
                             this.AOEMesh.material = OCTAVIA.FindMaterial("AOE (Pollution)")
@@ -576,6 +583,8 @@ class CityTileObjectController extends OCTAVIA.Core.ScriptComponent
                 {
                     if (this.TileArrowMesh.visible)
                         this.TileArrowMesh.visible = false
+                    if (this.AOEMesh.visible)
+                        this.AOEMesh.visible = false
 
                     if (GAME_SCENES.IsFirstObjectIntersected(this.TerrainMesh))
                     {

@@ -1,5 +1,6 @@
 export const GAME_SETTINGS = {
     City: {
+        name: "My City",
         geometryChunkSize : 16,
         active : false,
         mapSize : 64,
@@ -10,7 +11,21 @@ export const GAME_SETTINGS = {
         path : null,
         bulldozing : false,
         tileSet : "Default City",
-    }
+        population : 0,
+    },
+    Env: {
+        daysPassed : 0,
+        worldTimePassed : 0,
+        speed : 1,
+        money : 0,
+    },
+}
+
+export const GAME_SPEED = {
+    PAUSE   : 0,
+    NORMAL  : 1,
+    FAST    : 2,
+    EXTREME : 4,
 }
 
 export const GAME_OBJECT_DIRECTIONS = {
@@ -28,6 +43,7 @@ export const GAME_OBJECT_DIRECTIONS_MULT = {
 }
 
 export const GAME_EVENTS = [
+    "update env speed",
     "create city",
     "create city terrain",
     "create city tiles",
