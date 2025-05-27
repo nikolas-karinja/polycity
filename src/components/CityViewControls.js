@@ -57,8 +57,6 @@ class CityViewControls extends OCTAVIA.Core.ScriptComponent
 
             if (INPUT.IsKeyUp(KEYS.O))
                 this.Controls.autoRotate = !this.Controls.autoRotate
-
-            console.log(INPUT.PointerData.target.id)
         }
     }
 }
