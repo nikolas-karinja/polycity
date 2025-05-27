@@ -22,3 +22,10 @@ export const setEnvSpeed = (value) =>
 
     OCTAVIA.DispatchEvent("update env speed")
 }
+
+export const purchase = (value) => 
+{
+    GAME_SETTINGS.Env.money -= value
+    
+    OCTAVIA.DispatchEvent("update econ")
+}

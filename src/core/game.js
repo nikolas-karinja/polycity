@@ -17,7 +17,7 @@ export const GAME_SETTINGS = {
         daysPassed : 0,
         worldTimePassed : 0,
         speed : 1,
-        money : 0,
+        money : 20000,
     },
 }
 
@@ -44,6 +44,7 @@ export const GAME_OBJECT_DIRECTIONS_MULT = {
 
 export const GAME_EVENTS = [
     "update env speed",
+    "update econ",
     "create city",
     "create city terrain",
     "create city tiles",
