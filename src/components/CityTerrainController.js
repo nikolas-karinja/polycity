@@ -1,6 +1,6 @@
 import { EVENTS, OCTAVIA } from "@little-island/octavia-engine";
 import * as THREE from 'three'
-import { GAME_SETTINGS } from "../core/game";
+import { GAME_SETTINGS } from "../core/data/game";
 
 class CityTerrainController extends OCTAVIA.Core.ScriptComponent
 {

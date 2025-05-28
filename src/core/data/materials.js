@@ -1,5 +1,5 @@
 import { COLORINDEX_STRUCTURE_TYPE } from "./game";
-import icon_noPower from "../img/icons/no_power.png"
+import icon_noPower from "../../img/icons/no_power.png"
 import * as THREE from "three"
 
 export const GAME_TEXTURES = {

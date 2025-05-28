@@ -1,5 +1,5 @@
 import { CANVASES, OCTAVIA } from "@little-island/octavia-engine";
-import { COLORINDEX_STRUCTURE_TYPE, COLORINDEX_TILE_TYPE, GAME_SETTINGS, GAME_STRUCTURE_TYPES } from "../core/game";
+import { COLORINDEX_STRUCTURE_TYPE, COLORINDEX_TILE_TYPE, GAME_SETTINGS, GAME_STRUCTURE_TYPES } from "../core/data/game";
 import * as UTILS from "../core/utils"
 import * as THREE from "three"
 
@@ -28,6 +28,7 @@ class CityStructure
         this.TileSetData = UTILS.getStructureData(this.tileSetName)
         this.powerGridIdColor = null // for "non-power" buildings
         this.initialized = false
+        this.housing = [] // for "residential" buildings only
 
         this.Init()
     }

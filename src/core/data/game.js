@@ -12,6 +12,9 @@ export const GAME_SETTINGS = {
         bulldozing : false,
         tileSet : "Default City",
         population : 0,
+        playerParty: null,
+        residents: [],
+        Parties: {},
     },
     Env: {
         daysPassed : 0,
@@ -58,6 +61,7 @@ export const GAME_EVENTS = [
     "show city paths menu",
     "hide city structures menu",
     "show city structures menu",
+    "show choose party",
 ]
 
 export const GAME_STRUCTURE_RULES = {

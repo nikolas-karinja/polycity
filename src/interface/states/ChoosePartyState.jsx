@@ -1,33 +1,33 @@
 import { useEffect, useState } from "react"
+import PoliticalPartySelect from "../PoliticalPartySelect"
 import UIState from "../UIState"
 import { OCTAVIA } from "@little-island/octavia-engine"
-import { GAME_SETTINGS } from "../../core/data/game"
-import ToolBar from "../ToolBar"
-import TimeBar from "../TimeBar"
-import EconBar from "../EconBar"
 
-const CityState = () =>
+const ChoosePartyState = () =>
 {
     const [visible, setVisibility] = useState(false)
 
     useEffect(() =>
     {
-        OCTAVIA.AddEventListener("create city", () =>
+        OCTAVIA.AddEventListener("show choose party", () =>
         {
             setVisibility(true)
+        })
+
+        OCTAVIA.AddEventListener("create city", () =>
+        {
+            setVisibility(false)
         })
 
         OCTAVIA.AddEventListener("show city state", () =>
         {
-            setVisibility(true)
+            setVisibility(false)
         })
     }, [])
 
     return <UIState visible={visible}>
-        <ToolBar />
-        <EconBar />
-        <TimeBar />
+        <PoliticalPartySelect />
     </UIState>
 }
 
-export default CityState
+export default ChoosePartyState

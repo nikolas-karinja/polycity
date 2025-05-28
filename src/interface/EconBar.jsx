@@ -1,4 +1,4 @@
-import { GAME_SETTINGS } from "../core/game"
+import { GAME_SETTINGS } from "../core/data/game"
 import icon_money from "../img/icons/money.svg"
 import icon_population from "../img/icons/population.svg"
 import icon_angry from "../img/icons/angry.svg"

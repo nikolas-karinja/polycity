@@ -1,9 +1,9 @@
 import { OCTAVIA } from "@little-island/octavia-engine"
-import { COMPONENTS } from "./core/components"
-import { ASSEMBLIES } from "./core/assemblies"
-import { GAME_EVENTS } from "./core/game"
-import { GAME_MATERIALS, GAME_TEXTURES } from "./core/materials"
-import { MODELS } from "./core/models"
+import { COMPONENTS } from "./core/data/components"
+import { ASSEMBLIES } from "./core/data/assemblies"
+import { GAME_EVENTS } from "./core/data/game"
+import { GAME_MATERIALS, GAME_TEXTURES } from "./core/data/materials"
+import { MODELS } from "./core/data/models"
 
 const Octavia = ({children}) =>
 {
@@ -29,7 +29,8 @@ const Octavia = ({children}) =>
 
             setTimeout(() =>
             {
-                OCTAVIA.DispatchEvent("create city")
+                OCTAVIA.DispatchEvent("show choose party")
+                // OCTAVIA.DispatchEvent("create city")
             }, 100)
         }}>
         {children}

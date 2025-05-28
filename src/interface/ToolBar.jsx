@@ -5,7 +5,7 @@ import icon_bulldozer from "../img/icons/bulldozer.svg"
 import { useState } from 'react'
 import { OCTAVIA } from '@little-island/octavia-engine'
 import * as UTILS from '../core/utils'
-import { GAME_SETTINGS } from '../core/game'
+import { GAME_SETTINGS } from '../core/data/game'
 
 const ToolBarItemButton = ({name, itemSelected, setItemSelected, onSelect, onDeselect}) =>
 {

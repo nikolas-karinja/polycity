@@ -1,4 +1,4 @@
-import { GAME_SETTINGS, GAME_SPEED } from "../core/game"
+import { GAME_SETTINGS, GAME_SPEED } from "../core/data/game"
 import * as UTILS from "../core/utils"
 import icon_speedPause from "../img/icons/speed_pause.svg"
 import icon_speedNormal from "../img/icons/speed_normal.svg"

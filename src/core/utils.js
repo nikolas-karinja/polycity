@@ -1,5 +1,6 @@
 import { OCTAVIA } from "@little-island/octavia-engine"
-import { GAME_SETTINGS, GAME_TILESETS } from "./game"
+import { GAME_SETTINGS, GAME_TILESETS } from "./data/game"
+import { POLITICAL_PARTIES } from "./data/politics"
 
 export const getCityTileSetData = () =>
 {
@@ -15,6 +16,17 @@ export const getPathData = (name) =>
 {
     return GAME_TILESETS[GAME_SETTINGS.City.tileSet].Paths[name]
 }
+
+export const getPartyData = (name) =>
+{
+    return Object.keys(GAME_SETTINGS.City.Parties).length > 0 ? 
+        GAME_SETTINGS.City.Parties[name] : POLITICAL_PARTIES[name]
+}
+
+export const getPlayerPartyData = () =>
+    {
+        return getPartyData(GAME_SETTINGS.City.playerParty)
+    }
 
 export const setEnvSpeed = (value) =>
 {
